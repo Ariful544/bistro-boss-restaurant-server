@@ -5,7 +5,7 @@ const cors = require("cors");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const port = process.env.PORT || 3000;
 
-app.use(express());
+app.use(express.json());
 app.use(cors());
 
 const uri =
@@ -26,6 +26,7 @@ async function run() {
     await client.connect();
     const menuCollections = client.db("bistroBossRestaurant").collection("menu");
     const reviewCollections= client.db("bistroBossRestaurant").collection("reviews");
+    const cartCollections = client.db("bistroBossRestaurant").collection("carts");
 
     app.get("/", async (req, res) => {
       res.send("Welcome to bistro boss restaurant!");
@@ -38,6 +39,17 @@ async function run() {
         const result = await reviewCollections.find().toArray();
         res.send(result);
     });
+    app.post("/carts", async (req, res) => {
+      const cartItem = req.body;
+      const result = await cartCollections.insertOne(cartItem);
+      res.send(result);
+    });
+    app.get('/carts', async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const result = await cartCollections.find(query).toArray();
+      res.send(result);
+    })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
